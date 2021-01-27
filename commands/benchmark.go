@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	odoh "github.com/cloudflare/odoh-go"
 	"github.com/miekg/dns"
 	"github.com/urfave/cli"
@@ -257,7 +258,7 @@ func benchmarkClient(c *cli.Context) {
 	filterCount := c.Uint64("pick")
 	numberOfParallelClients := c.Uint64("numclients")
 	requestPerMinute := c.Uint64("rate") // requests/minute
-	discoveryServiceHostname := c.String("discovery")
+	//discoveryServiceHostname := c.String("discovery")
 	tickTrigger := getTickTriggerTiming(int(requestPerMinute))
 
 	totalResponsesNeeded := numberOfParallelClients * filterCount
@@ -280,18 +281,22 @@ func benchmarkClient(c *cli.Context) {
 	// Create network requests concurrently.
 	const dnsMessageType = dns.TypeA
 
-	availableServices, err := fetchProxiesAndTargets(discoveryServiceHostname, instance.client[0])
-	if err != nil {
-		log.Fatalf("Unable to discover the services available.")
-	}
+	//availableServices, err := fetchProxiesAndTargets(discoveryServiceHostname, instance.client[0])
+	//if err != nil {
+	//	log.Fatalf("Unable to discover the services available.")
+	//}
 
 	// Obtain all the keys for the targets.
-	targets := availableServices.Targets
-	proxies := availableServices.Proxies
+	targets := []string{"odoh.cloudflare-dns.com"}
+	proxies := []string{"odoh-proxy-dot-odoh-target.wm.r.appspot.com", "alpha-odoh-rs-proxy.research.cloudflare.com"}
 	for _, target := range targets {
 		configs, err := fetchTargetConfigs(target)
 		if err != nil {
 			log.Fatalf("Unable to obtain the ObliviousDoHConfigs from %v. Error %v", target, err)
+		}
+		if len(configs.Configs) == 0 {
+			err := errors.New("target provided no odoh configs")
+			log.Println(err)
 		}
 		config := configs.Configs[0]
 		state.InsertKey(target, config.Contents)
