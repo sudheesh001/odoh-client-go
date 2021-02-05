@@ -288,7 +288,7 @@ func benchmarkClient(c *cli.Context) {
 
 	// Obtain all the keys for the targets.
 	targets := []string{"odoh.cloudflare-dns.com"}
-	proxies := []string{"odoh-proxy-dot-odoh-target.wm.r.appspot.com", "alpha-odoh-rs-proxy.research.cloudflare.com"}
+	proxies := []string{"odoh-proxy-dot-odoh-target.wm.r.appspot.com"}
 	for _, target := range targets {
 		configs, err := fetchTargetConfigs(target)
 		if err != nil {
